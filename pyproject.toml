@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "db-cli"
+version = "0.1.0"
+description = ""
+authors = ["Freedom Loisa <kitakayaloisa@gmail.com>"]
+readme = "README.md"
+packages = [{include = "db_cli"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+psycopg2-binary = "^2.9.6"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
