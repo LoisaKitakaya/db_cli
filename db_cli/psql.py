@@ -101,6 +101,37 @@ class PostgresConnect:
 
         return
 
+    def delete_tables(self, table: str):
+        conn = None
+
+        try:
+            conn = psycopg2.connect(**self.db)
+
+            cur = conn.cursor()
+
+            cur.execute(f"DROP TABLE {table};")
+
+            conn.commit()
+
+            click.echo(
+                click.style(
+                    f"\nTable {table} has been deleted successfully.\n",
+                    fg="green",
+                    bold=True,
+                )
+            )
+
+            cur.close()
+
+        except Exception as error:
+            click.echo(click.style(f"{error}", fg="red", bold=True))
+
+        finally:
+            if conn is not None:
+                conn.close()
+
+        return
+
     def view_tables(self):
         conn = None
 
@@ -507,6 +538,16 @@ def create_tables(path: str):
 
 
 @click.command()
+@click.option(
+    "--table",
+    default="milk_production",
+    help="This refers to database table that is meant to be deleted.",
+)
+def delete_tables(table: str):
+    my_db.delete_tables(table)
+
+
+@click.command()
 def view_tables():
     my_db.view_tables()
 
@@ -704,6 +745,8 @@ def update_date(table: str, id: int, production_date: str):
 cli.add_command(check_connection)
 
 cli.add_command(create_tables)
+cli.add_command(delete_tables)
+
 cli.add_command(view_tables)
 
 cli.add_command(create_record)
