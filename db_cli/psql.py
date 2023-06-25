@@ -365,7 +365,7 @@ def create_record(
 
 @click.command()
 @click.option(
-    "--table", help="This represents the name of the database table to query."
+    "--table", default="milk_production", help="This represents the name of the database table to query."
 )
 def view_all_records(table: str):
     my_db.view_all_records(table)
@@ -373,7 +373,7 @@ def view_all_records(table: str):
 
 @click.command()
 @click.option(
-    "--table", help="This represents the name of the database table to query."
+    "--table", default="milk_production", help="This represents the name of the database table to query."
 )
 @click.option(
     "--id",
