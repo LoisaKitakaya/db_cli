@@ -191,6 +191,96 @@ class PostgresConnect:
 
         return
 
+    def view_all_records(self, table: str):
+        conn = None
+
+        try:
+            conn = psycopg2.connect(**self.db)
+
+            cur = conn.cursor()
+
+            cur.execute(f"SELECT * FROM {table};")
+
+            records = cur.fetchall()
+
+            click.echo(
+                click.style(
+                    f"List of all the records in table '{table}':\n",
+                    fg="cyan",
+                    bold=True,
+                    underline=True,
+                )
+            )
+
+            count = 1
+
+            for record in records:
+                click.echo(
+                    click.style(
+                        f"{count}. | id: {record[0]} | cow: {record[1]} | morning: {record[2]} | noon: {record[3]} | evening: {record[4]} | unit: {record[5]} | date: {record[6]}\n",
+                        fg="cyan",
+                        bold=True,
+                    )
+                )
+
+                count += 1
+
+            cur.close()
+
+        except Exception as error:
+            click.echo(click.style(f"{error}", fg="red", bold=True))
+
+        finally:
+            if conn is not None:
+                conn.close()
+
+        return
+
+    def view_record(self, table: str, id: int):
+        conn = None
+
+        try:
+            conn = psycopg2.connect(**self.db)
+
+            cur = conn.cursor()
+
+            cur.execute(f"SELECT * FROM {table} WHERE id = {id};")
+
+            records = cur.fetchall()
+
+            click.echo(
+                click.style(
+                    f"Record of id '{id}' in table '{table}':\n",
+                    fg="cyan",
+                    bold=True,
+                    underline=True,
+                )
+            )
+
+            count = 1
+
+            for record in records:
+                click.echo(
+                    click.style(
+                        f"{count}. | id: {record[0]} | cow: {record[1]} | morning: {record[2]} | noon: {record[3]} | evening: {record[4]} | unit: {record[5]} | date: {record[6]}\n",
+                        fg="cyan",
+                        bold=True,
+                    )
+                )
+
+                count += 1
+
+            cur.close()
+
+        except Exception as error:
+            click.echo(click.style(f"{error}", fg="red", bold=True))
+
+        finally:
+            if conn is not None:
+                conn.close()
+
+        return
+
 
 my_db = PostgresConnect("database.ini")
 
@@ -273,6 +363,26 @@ def create_record(
     )
 
 
+@click.command()
+@click.option(
+    "--table", help="This represents the name of the database table to query."
+)
+def view_all_records(table: str):
+    my_db.view_all_records(table)
+
+
+@click.command()
+@click.option(
+    "--table", help="This represents the name of the database table to query."
+)
+@click.option(
+    "--id",
+    help="This represents the id (a unique identifier) of a record in a table in the database to query.",
+)
+def view_record(table: str, id: int):
+    my_db.view_record(table, id)
+
+
 cli.add_command(check_connection)
 
 cli.add_command(create_tables)
@@ -280,6 +390,8 @@ cli.add_command(view_tables)
 
 cli.add_command(create_record)
 
+cli.add_command(view_all_records)
+cli.add_command(view_record)
 
 if __name__ == "__main__":
     cli()
