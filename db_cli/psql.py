@@ -1,4 +1,5 @@
 import click
+from pytz import timezone
 from datetime import datetime
 import psycopg2  # type: ignore
 from configparser import ConfigParser
@@ -114,21 +115,31 @@ class PostgresConnect:
 
             tables = cur.fetchall()
 
-            click.echo(
-                click.style(
-                    "List of all the tables in the database:\n",
-                    fg="cyan",
-                    bold=True,
-                    underline=True,
+            if tables:
+                count = 1
+
+                click.echo(
+                    click.style(
+                        "List of all the tables in the database:\n",
+                        fg="cyan",
+                        bold=True,
+                        underline=True,
+                    )
                 )
-            )
 
-            count = 1
+                for table in tables:
+                    click.echo(click.style(f"{count}. {table}\n", fg="cyan", bold=True))
 
-            for table in tables:
-                click.echo(click.style(f"{count}. {table}\n", fg="cyan", bold=True))
+                    count += 1
 
-                count += 1
+            else:
+                click.echo(
+                    click.style(
+                        "No tables have been created yet (0 tables found).\n",
+                        fg="yellow",
+                        bold=True,
+                    )
+                )
 
             cur.close()
 
@@ -144,9 +155,9 @@ class PostgresConnect:
     def create_record(
         self,
         animal: str,
-        morning_production: int,
-        afternoon_production: int,
-        evening_production: int,
+        morning_production: float,
+        afternoon_production: float,
+        evening_production: float,
         production_unit: str,
         production_date: datetime,
     ):
@@ -158,14 +169,14 @@ class PostgresConnect:
             cur = conn.cursor()
 
             cur.execute(
-                f"INSERT INTO milk_production(animal, morning_production, afternoon_production, evening_production, production_unit, production_date), ({animal}, {morning_production}, { afternoon_production}, {evening_production}, {production_unit}, {production_date})"
+                f"INSERT INTO milk_production(animal, morning_production, afternoon_production, evening_production, production_unit, production_date) VALUES('{animal}', {morning_production}, { afternoon_production}, {evening_production}, '{production_unit}', '{production_date.date()}')"
             )
 
             conn.commit()
 
             click.echo(
                 click.style(
-                    "Record has been created successfully.", fg="green", bold=True
+                    "\nRecord has been created successfully.\n", fg="green", bold=True
                 )
             )
 
@@ -210,8 +221,56 @@ def view_tables():
 
 
 @click.command()
-def create_record():
-    pass
+@click.option(
+    "--animal",
+    prompt="name of cow",
+    help="This represents the name of the animal (cow).",
+)
+@click.option(
+    "--morning-production",
+    prompt="morning production",
+    help="This represents the amount (e.g. in Litres) produced by the cow in the morning.",
+)
+@click.option(
+    "--afternoon-production",
+    prompt="afternoon production",
+    help="This represents the amount (e.g. in Litres) produced by the cow in the afternoon.",
+)
+@click.option(
+    "--evening-production",
+    prompt="evening production",
+    help="This represents the amount (e.g. in Litres) produced by the cow in the evening.",
+)
+@click.option(
+    "--production-unit",
+    default="Litres",
+    help="This represents the unit of production, default: Litres.",
+)
+@click.option(
+    "--production-date",
+    prompt="date of production",
+    help='This represents the date of production (of milk by each cow), e.g. "2023-10-231"',
+)
+def create_record(
+    animal: str,
+    morning_production: float,
+    afternoon_production: float,
+    evening_production: float,
+    production_unit: str,
+    production_date: str,
+):
+    my_timezone = timezone("Africa/Nairobi")
+
+    date = my_timezone.localize(datetime.strptime(production_date, "%Y-%m-%d"))
+
+    my_db.create_record(
+        animal,
+        morning_production,
+        afternoon_production,
+        evening_production,
+        production_unit,
+        date,
+    )
 
 
 cli.add_command(check_connection)
