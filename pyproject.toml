@@ -10,6 +10,7 @@ packages = [{include = "db_cli"}]
 python = "^3.10"
 psycopg2-binary = "^2.9.6"
 click = "^8.1.3"
+pytz = "^2023.3"
 
 
 [tool.poetry.group.dev.dependencies]
